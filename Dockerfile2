@@ -1,0 +1,31 @@
+# ========= ARGUMENTE =========
+ARG NODEv=23-alpine
+ARG RUSTv=1.82
+
+# ========= BASE STAGES =========
+
+# Rust-Basis-Image
+FROM rust:${RUSTv} AS rust-base
+WORKDIR /app
+RUN cargo install cargo-watch
+
+# Node.js-Basis-Image
+FROM node:${NODEv} AS node-base
+WORKDIR /app
+
+# Initialisiere npm-Projekt und installiere globale Pakete
+RUN npm init -y \
+    && npm install -g webpack webpack-cli
+
+# FROM rust-base AS test
+WORKDIR /app
+# Kopiere Rust-Tools aus rust-base
+COPY --from=rust-base /usr/local /usr/local
+# Kopiere Node.js-Tools aus node-base
+COPY --from=node-base /usr/local /usr/local
+# Setze den PATH für Node.js und npm
+ENV PATH="/usr/local/bin:${PATH}"
+# Kopiere die Package-Dateien und installiere npm-Abhängigkeiten
+COPY package.json package-lock.json ./ 
+# Kopiere den restlichen Quellcode
+COPY . .

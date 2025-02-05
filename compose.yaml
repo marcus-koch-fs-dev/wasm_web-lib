@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      # Mount des gesamten Projektordners für Live-Entwicklung
+      - ./:/app
+      # Cargo-Registry-Cache mounten, um Builds zu beschleunigen
+      - cargo-cache:/usr/local/cargo/registry
+      # Node.js-Module mounten, um lokale Änderungen zu reflektieren
+      - ./node_modules:/app/node_modules
+    working_dir: /app
+    command: cargo run
+    environment:
+      RUST_LOG: debug
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+
+volumes:
+  cargo-cache:
